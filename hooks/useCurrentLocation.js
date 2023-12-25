@@ -4,6 +4,7 @@ import * as Location from "expo-location";
 const useCurrentLocation = () => {
   const [location, setLocation] = useState(null);
   const [errorMsg, setErrorMsg] = useState(null);
+  const [city, setCity] = useState(null);
 
   useEffect(() => {
     (async () => {

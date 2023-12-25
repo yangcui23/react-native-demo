@@ -1,10 +1,22 @@
-import { React, useEffect, useState } from "react";
-import { FlatList, SafeAreaView, StyleSheet, Text, View } from "react-native";
+import { React, useEffect, useState, useRef } from "react";
+import {
+  FlatList,
+  SafeAreaView,
+  StyleSheet,
+  Text,
+  View,
+  Dimensions,
+  ScrollView,
+} from "react-native";
 import useCurrentLocation from "../../hooks/useCurrentLocation";
-import MapView, { Marker } from "react-native-maps";
+import MapView, { Marker, Callout } from "react-native-maps";
 import VenueList from "./VenueList";
 import { db, getDocs, collection } from "../../services/config";
 import { ActivityIndicator } from "react-native";
+import SlidingUpPanel from "rn-sliding-up-panel";
+import { MaterialIcons } from "@expo/vector-icons";
+
+import { Modalize } from "react-native-modalize";
 // import { calculateDistance } from "../..utils/calculateDistance";
 // import venues from "../../constants/venues";
 function calculateDistance(coords1, coords2) {
@@ -25,11 +37,26 @@ function calculateDistance(coords1, coords2) {
   const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
   return RADIUS_OF_EARTH_IN_MILES * c;
 }
-
+const screenHeight = Dimensions.get("window").height;
+const panelHeights = {
+  small: screenHeight * 0.3,
+  medium: screenHeight * 0.5,
+  large: screenHeight,
+};
 const Map = ({}) => {
   const [location, errorMsg] = useCurrentLocation();
   const [nearbyVenues, setNearbyVenues] = useState([]);
-
+  const [panelHeight, setPanelHeight] = useState(panelHeights.small);
+  const [selectedVenue, setSelectedVenue] = useState(null);
+  const modalizeRef = useRef(null);
+  const screenHeight = Dimensions.get("window").height;
+  console.log(screenHeight);
+  const snappingPoints = [
+    screenHeight * 0.3,
+    screenHeight * 0.5,
+    screenHeight * 0.8,
+  ];
+  const minimumHeight = screenHeight * 0.3;
   // useEffect(() => {
   //   if (location) {
   //     const filteredVenues = venues
@@ -45,6 +72,16 @@ const Map = ({}) => {
   //     setNearbyVenues(filteredVenues);
   //   }
   // }, [location]);
+  const handleMarkerPress = (venue) => {
+    setSelectedVenue(venue);
+    modalizeRef.current?.open();
+  };
+  const renderContent = () => (
+    <View style={styles.modalContent}>
+      <Text style={styles.venueName}>{selectedVenue?.name}</Text>
+      {/* Render more venue details here */}
+    </View>
+  );
   const getVenueList = async () => {
     const querySnapshot = await getDocs(collection(db, "venues"));
     const venuesArray = [];
@@ -75,30 +112,62 @@ const Map = ({}) => {
       </View>
     );
   }
-
   const userLocation = {
     latitude: location.coords.latitude,
     longitude: location.coords.longitude,
     latitudeDelta: 0.0922,
     longitudeDelta: 0.0421,
   };
+  console.log("User Location:", userLocation);
   return (
     <SafeAreaView style={styles.container}>
       <MapView style={{ flex: 1 }} initialRegion={userLocation}>
         <Marker coordinate={userLocation} title="Your Location" />
+        {nearbyVenues.map((venue) => (
+          <Marker
+            key={venue.id}
+            coordinate={{
+              latitude: venue.latitude,
+              longitude: venue.longitude,
+            }}
+            title={venue.name}
+            onPress={() => handleMarkerPress(venue)}
+          ></Marker>
+        ))}
       </MapView>
+      <Modalize ref={modalizeRef} snapPoint={300} modalHeight={600}>
+        {renderContent()}
+      </Modalize>
       {nearbyVenues.length > 0 ? (
-        <FlatList
-          data={nearbyVenues}
-          renderItem={({ item }) => (
-            <VenueList
-              title={item.name}
-              image={item.image}
-              location={item.location}
-              keyExtractor={(item) => item.id}
-            />
+        <SlidingUpPanel
+          draggableRange={{ top: 680, bottom: 200 }}
+          minimumVelocityThreshold={0.1}
+          minimumDistanceThreshold={0.24}
+          snappingPoints={snappingPoints}
+          visible={true}
+          backdropOpacity={0}
+          friction={2}
+          style={styles.container}
+        >
+          {(dragHandler) => (
+            <View style={styles.container}>
+              <View style={styles.dragHandler} {...dragHandler}>
+                <MaterialIcons name="drag-handle" color="grey" />
+              </View>
+              <ScrollView style={styles.panelContainer}>
+                <Text>Nearby Venues</Text>
+                {nearbyVenues.map((item) => (
+                  <VenueList
+                    key={item.id}
+                    title={item.name}
+                    image={item.image}
+                    location={item.location}
+                  />
+                ))}
+              </ScrollView>
+            </View>
           )}
-        />
+        </SlidingUpPanel>
       ) : (
         <ActivityIndicator />
       )}
@@ -108,11 +177,61 @@ const Map = ({}) => {
 
 const styles = StyleSheet.create({
   container: {
+    // flex: 1,
+    // zIndex: 1,
     flex: 1,
   },
-  // map: {
-  //   width: Dimensions.get("window").width,
-  //   height: Dimensions.get("window").height / 2,
-  // },
+  imageContainer: {
+    marginBottom: 200,
+  },
+  slidingPanel: {
+    backgroundColor: "white",
+  },
+
+  panelContainer: {
+    flex: 1,
+    padding: 20,
+    backgroundColor: "white",
+    borderTopLeftRadius: 5,
+    borderTopRightRadius: 5,
+    marginBottom: 100,
+  },
+  panelHandle: {
+    alignItems: "center",
+    paddingVertical: 10,
+    borderTopWidth: 1,
+    borderTopColor: "#EDEDED",
+  },
+  dragHandler: {
+    alignSelf: "stretch",
+    height: 30,
+    alignItems: "center",
+    justifyContent: "center",
+    backgroundColor: "#ccc",
+  },
+  calloutView: {
+    borderRadius: 10,
+    padding: 10,
+    backgroundColor: "white",
+    borderWidth: 1,
+    borderColor: "grey",
+  },
+  calloutTitle: {
+    fontWeight: "bold",
+  },
+  venueInfo: {
+    position: "absolute",
+    bottom: 10,
+    left: 10,
+    right: 10,
+    backgroundColor: "white",
+    padding: 10,
+    borderRadius: 10,
+    elevation: 3, // for Android shadow
+    shadowColor: "#000", // for iOS shadow
+    shadowOpacity: 0.3,
+    shadowRadius: 5,
+    shadowOffset: { width: 0, height: 2 },
+  },
 });
 export default Map;

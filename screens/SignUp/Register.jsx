@@ -6,6 +6,7 @@ import {
   ScrollView,
   View,
   Button as RNButton,
+  ImageBackground,
 } from "react-native";
 import { StatusBar } from "expo-status-bar";
 import { useNavigation } from "@react-navigation/native";
@@ -14,8 +15,12 @@ import { Button, InputField, ErrorMessage } from "../../components/index";
 import { createUserWithEmailAndPassword } from "firebase/auth";
 import { sendEmailVerification } from "firebase/auth";
 import { auth } from "../../services/config";
+import images from "../../constants/images.js";
+
 // const auth = Firebase.auth();
 const Register = () => {
+  const [firstName, setFirstName] = useState("");
+  const [lastName, setLastName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [passwordVisibility, setPasswordVisibility] = useState(true);
@@ -63,12 +68,44 @@ const Register = () => {
           backgroundColor: "#fff",
           marginBottom: 20,
         }}
+        leftIcon="account"
+        placeholder="First Name"
+        autoCapitalize="none"
+        autoCorrect={false}
+        textContentType="name"
+        value={firstName}
+        onChangeText={(text) => setFirstName(text)}
+      />
+      <InputField
+        inputStyle={{
+          fontSize: 14,
+        }}
+        containerStyle={{
+          backgroundColor: "#fff",
+          marginBottom: 20,
+        }}
+        leftIcon="account"
+        placeholder="Last Name"
+        autoCapitalize="none"
+        autoCorrect={false}
+        textContentType="name"
+        value={lastName}
+        onChangeText={(text) => setLastName(text)}
+      />
+      <InputField
+        inputStyle={{
+          fontSize: 14,
+        }}
+        containerStyle={{
+          backgroundColor: "#fff",
+          marginBottom: 20,
+        }}
         leftIcon="email"
         placeholder="Enter email"
         autoCapitalize="none"
         keyboardType="email-address"
         textContentType="emailAddress"
-        autoFocus={true}
+        autoFocus={false}
         value={email}
         onChangeText={(text) => setEmail(text)}
       />
@@ -91,6 +128,7 @@ const Register = () => {
         onChangeText={(text) => setPassword(text)}
         handlePasswordVisibility={handlePasswordVisibility}
       />
+
       {/* {signupError ? <ErrorMessage error={signupError} visible={true} /> : null} */}
       <Button
         onPress={handleSignup}
@@ -102,11 +140,14 @@ const Register = () => {
           marginBottom: 24,
         }}
       />
-      <RNButton
-        onPress={() => navigation.navigate("Login")}
-        title="Go to Login"
-        color="#fff"
-      />
+      <View style={styles.textContainer}>
+        <Text style={styles.text}>Already have an account?</Text>
+        <RNButton
+          onPress={() => navigation.navigate("Login")}
+          title="Login here"
+          color="green"
+        />
+      </View>
     </View>
   );
 };
@@ -123,6 +164,14 @@ const styles = StyleSheet.create({
     margin: 12,
     borderWidth: 1,
     padding: 10,
+  },
+  textContainer: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  text: {
+    fontSize: 18,
   },
 });
 

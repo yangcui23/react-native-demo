@@ -6,12 +6,13 @@ import {
   Image,
   ImageBackground,
   TouchableOpacity,
+  Pressable,
 } from "react-native";
 import { React, useState, useEffect } from "react";
 import images from "../../constants/images.js";
 import colors from "../../constants/colors.js";
 import { useFonts } from "expo-font";
-export default function Home() {
+export default function Home({ navigation }) {
   const [fontsLoaded] = useFonts({
     Anton: require("../../assets/fonts/Anton-Regular.ttf"),
     Chakra: require("../../assets/fonts/ChakraPetch-Medium.ttf"),
@@ -27,9 +28,19 @@ export default function Home() {
         style={styles.backgroundImage}
       >
         <Image source={images.logo} style={styles.logo} />
-        <TouchableOpacity>
-          <Text>Rooftop Venues Near You</Text>
-        </TouchableOpacity>
+        <Pressable
+          style={({ pressed }) => [
+            {
+              backgroundColor: pressed ? "gray" : "#a2d2ff",
+              padding: 10,
+              borderRadius: 5,
+            },
+            styles.button,
+          ]}
+          onPress={() => navigation.navigate("Map")}
+        >
+          <Text style={styles.text}> Rooftop Venues Near You</Text>
+        </Pressable>
       </ImageBackground>
     </SafeAreaView>
   );
@@ -53,5 +64,9 @@ const styles = StyleSheet.create({
     width: "100%",
     height: "100%",
     alignItems: "center",
+  },
+  text: {
+    fontFamily: "Anton",
+    fontSize: 20,
   },
 });

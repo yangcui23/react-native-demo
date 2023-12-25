@@ -15,14 +15,15 @@ const VenueList = (props) => {
     <View style={styles.container}>
       <Text style={styles.venueName}> {props.title}</Text>
       <Text>{props.location}</Text>
-      <Image source={{ uri: props.image }} />
+      <Image source={{ uri: props.image }} style={styles.venueImage} />
     </View>
   );
 };
 
 const styles = StyleSheet.create({
   container: {
-    flex: 1,
+    // flex: 1,
+    marginBottom: 100,
   },
   venueItem: {
     padding: 10,
@@ -31,6 +32,10 @@ const styles = StyleSheet.create({
   },
   venueName: {
     fontWeight: "bold",
+  },
+  venueImage: {
+    width: 280,
+    height: 180,
   },
 });
 

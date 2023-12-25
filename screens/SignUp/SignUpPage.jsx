@@ -5,7 +5,7 @@ import Register from "./Register";
 import Login from "../Login/Login";
 import useAuth from "../../hooks/useAuth";
 import Account from "../Account/Account";
-
+import Welcome from "../Welcome/Welcome";
 const SignUpPageStack = createStackNavigator();
 
 const SignUpPage = () => {
@@ -20,6 +20,7 @@ const SignUpPage = () => {
   } else {
     return (
       <SignUpPageStack.Navigator screenOptions={{ headerShown: false }}>
+        <SignUpPageStack.Screen name="Welcome" component={Welcome} />
         <SignUpPageStack.Screen name="Register" component={Register} />
         <SignUpPageStack.Screen name="Login" component={Login} />
       </SignUpPageStack.Navigator>
