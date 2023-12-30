@@ -18,63 +18,67 @@ import { MaterialIcons } from "@expo/vector-icons";
 import Register from "./screens/SignUp/Register";
 import SignUpPage from "./screens/SignUp/SignUpPage";
 import logo from "./assets/images/up.png";
+import MapStackNavitagor from "./navigation/mapStack";
+import { StripeProvider } from "@stripe/stripe-react-native";
 const Tab = createBottomTabNavigator();
 
 export default function App({ navigation }) {
   return (
-    <GestureHandlerRootView style={{ flex: 1 }}>
-      <NavigationContainer>
-        <Tab.Navigator
-          screenOptions={({ navigation }) => ({
-            tabBarActiveTintColor: "tomato",
-            tabBarInactiveTintColor: "gray",
-            headerStyle: {
-              backgroundColor: "#437f97",
-            },
-            headerLeft: () => (
-              <TouchableOpacity onPress={() => navigation.navigate("Home")}>
-                <Image source={logo} style={styles.logo} />
-              </TouchableOpacity>
-            ),
-          })}
-        >
-          <Tab.Screen
-            name="Home"
-            component={Home}
-            options={{
-              title: "",
-              tabBarLabel: "Home",
-              tabBarIcon: ({ color, size }) => (
-                <MaterialIcons name="home" color={color} size={size} />
+    <StripeProvider publishableKey="pk_test_51N1mK1HxWG3skUBnTVlZ7VjRM0lmev84pllPANe6mp12ON4TaFCjV4ewwPZ1Z4yzeDsriOWOGNVhVnpNUXgjZGrF00gjEdxw62">
+      <GestureHandlerRootView style={{ flex: 1 }}>
+        <NavigationContainer>
+          <Tab.Navigator
+            screenOptions={({ navigation }) => ({
+              tabBarActiveTintColor: "tomato",
+              tabBarInactiveTintColor: "gray",
+              headerStyle: {
+                backgroundColor: "#437f97",
+              },
+              headerLeft: () => (
+                <TouchableOpacity onPress={() => navigation.navigate("Home")}>
+                  <Image source={logo} style={styles.logo} />
+                </TouchableOpacity>
               ),
-            }}
-          />
-          <Tab.Screen
-            name="Map"
-            component={Map}
-            options={{
-              title: "",
-              tabBarLabel: "Map",
+            })}
+          >
+            <Tab.Screen
+              name="Home"
+              component={Home}
+              options={{
+                title: "",
+                tabBarLabel: "Home",
+                tabBarIcon: ({ color, size }) => (
+                  <MaterialIcons name="home" color={color} size={size} />
+                ),
+              }}
+            />
+            <Tab.Screen
+              name="MapTab"
+              component={MapStackNavitagor}
+              options={{
+                title: "",
+                tabBarLabel: "Map",
 
-              tabBarIcon: ({ color, size }) => (
-                <MaterialIcons name="map" color={color} size={size} />
-              ),
-            }}
-          />
-          <Tab.Screen
-            name="Account"
-            component={SignUpPage}
-            options={{
-              title: "",
-              tabBarLabel: "Account",
-              tabBarIcon: ({ color, size }) => (
-                <MaterialIcons name="book" color={color} size={size} />
-              ),
-            }}
-          />
-        </Tab.Navigator>
-      </NavigationContainer>
-    </GestureHandlerRootView>
+                tabBarIcon: ({ color, size }) => (
+                  <MaterialIcons name="map" color={color} size={size} />
+                ),
+              }}
+            />
+            <Tab.Screen
+              name="Account"
+              component={SignUpPage}
+              options={{
+                title: "",
+                tabBarLabel: "Account",
+                tabBarIcon: ({ color, size }) => (
+                  <MaterialIcons name="book" color={color} size={size} />
+                ),
+              }}
+            />
+          </Tab.Navigator>
+        </NavigationContainer>
+      </GestureHandlerRootView>
+    </StripeProvider>
   );
 }
 

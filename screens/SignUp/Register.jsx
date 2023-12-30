@@ -12,7 +12,7 @@ import { StatusBar } from "expo-status-bar";
 import { useNavigation } from "@react-navigation/native";
 import Firebase from "../../services/config";
 import { Button, InputField, ErrorMessage } from "../../components/index";
-import { createUserWithEmailAndPassword } from "firebase/auth";
+import { createUserWithEmailAndPassword ,updateProfile} from "firebase/auth";
 import { sendEmailVerification } from "firebase/auth";
 import { auth } from "../../services/config";
 import images from "../../constants/images.js";
@@ -37,20 +37,15 @@ const Register = () => {
       setPasswordVisibility(!passwordVisibility);
     }
   };
-  // const onHandleSignup = async () => {
-  //   try {
-  //     if (email !== "" && password !== "") {
-  //       await auth.createUserWithEmailAndPassword(email, password);
-  //     }
-  //   } catch (error) {
-  //     setSignupError(error.message);
-  //   }
-  // };
+
   const handleSignup = async () => {
     if (email && password) {
       try {
-        await createUserWithEmailAndPassword(auth, email, password);
-        await sendEmailVerification();
+        const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+      const user = userCredential.user;
+      await updateProfile(user, {
+        displayName: firstName, // Setting the displayName to the user's first name
+      });
       } catch (err) {
         console.log(err.message);
       }

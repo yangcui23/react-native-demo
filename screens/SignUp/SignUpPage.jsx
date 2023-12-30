@@ -14,7 +14,7 @@ const SignUpPage = () => {
   if (user) {
     return (
       <SignUpPageStack.Navigator screenOptions={{ headerShown: false }}>
-        <SignUpPageStack.Screen name="Account" component={Account} />
+        <SignUpPageStack.Screen name="Accountpage" component={Account} />
       </SignUpPageStack.Navigator>
     );
   } else {

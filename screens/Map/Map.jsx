@@ -7,6 +7,7 @@ import {
   View,
   Dimensions,
   ScrollView,
+  Pressable,
 } from "react-native";
 import useCurrentLocation from "../../hooks/useCurrentLocation";
 import MapView, { Marker, Callout } from "react-native-maps";
@@ -15,73 +16,47 @@ import { db, getDocs, collection } from "../../services/config";
 import { ActivityIndicator } from "react-native";
 import SlidingUpPanel from "rn-sliding-up-panel";
 import { MaterialIcons } from "@expo/vector-icons";
-
 import { Modalize } from "react-native-modalize";
-// import { calculateDistance } from "../..utils/calculateDistance";
-// import venues from "../../constants/venues";
-function calculateDistance(coords1, coords2) {
-  const toRadian = (angle) => (Math.PI / 180) * angle;
-  const distance = (a, b) => (Math.PI / 180) * (b - a);
-  const RADIUS_OF_EARTH_IN_MILES = 3958.8;
-
-  const dLatitude = distance(coords1.latitude, coords2.latitude);
-  const dLongitude = distance(coords1.longitude, coords2.longitude);
-
-  const a =
-    Math.sin(dLatitude / 2) * Math.sin(dLatitude / 2) +
-    Math.cos(toRadian(coords1.latitude)) *
-      Math.cos(toRadian(coords2.latitude)) *
-      Math.sin(dLongitude / 2) *
-      Math.sin(dLongitude / 2);
-
-  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-  return RADIUS_OF_EARTH_IN_MILES * c;
-}
+import { useNavigation } from "@react-navigation/native";
+import useAuth from "../../hooks/useAuth";
 const screenHeight = Dimensions.get("window").height;
 const panelHeights = {
   small: screenHeight * 0.3,
   medium: screenHeight * 0.5,
   large: screenHeight,
 };
-const Map = ({}) => {
+const Map = () => {
+  const { user } = useAuth();
   const [location, errorMsg] = useCurrentLocation();
   const [nearbyVenues, setNearbyVenues] = useState([]);
   const [panelHeight, setPanelHeight] = useState(panelHeights.small);
   const [selectedVenue, setSelectedVenue] = useState(null);
+
+  const navigation = useNavigation();
   const modalizeRef = useRef(null);
   const screenHeight = Dimensions.get("window").height;
   console.log(screenHeight);
-  const snappingPoints = [
-    screenHeight * 0.3,
-    screenHeight * 0.5,
-    screenHeight * 0.8,
-  ];
+  const snappingPoints = [screenHeight * 0.4, screenHeight * 0.8];
   const minimumHeight = screenHeight * 0.3;
-  // useEffect(() => {
-  //   if (location) {
-  //     const filteredVenues = venues
-  //       .map((venue) => ({
-  //         ...venue,
-  //         distance: calculateDistance(location.coords, {
-  //           latitude: venue.latitude,
-  //           longitude: venue.longitude,
-  //         }),
-  //       }))
-  //       .filter((venue) => venue.distance <= 50); // Distance in miles
+  const calculateDistance = (coords1, coords2) => {
+    const toRad = (x) => (x * Math.PI) / 180;
+    const R = 6371;
 
-  //     setNearbyVenues(filteredVenues);
-  //   }
-  // }, [location]);
-  const handleMarkerPress = (venue) => {
-    setSelectedVenue(venue);
-    modalizeRef.current?.open();
+    const dLat = toRad(coords2.latitude - coords1.latitude);
+    const dLon = toRad(coords2.longitude - coords1.longitude);
+
+    const a =
+      Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+      Math.cos(toRad(coords1.latitude)) *
+        Math.cos(toRad(coords2.latitude)) *
+        Math.sin(dLon / 2) *
+        Math.sin(dLon / 2);
+
+    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+    const distance = R * c;
+
+    return distance * 0.621371;
   };
-  const renderContent = () => (
-    <View style={styles.modalContent}>
-      <Text style={styles.venueName}>{selectedVenue?.name}</Text>
-      {/* Render more venue details here */}
-    </View>
-  );
   const getVenueList = async () => {
     const querySnapshot = await getDocs(collection(db, "venues"));
     const venuesArray = [];
@@ -94,9 +69,45 @@ const Map = ({}) => {
     });
     setNearbyVenues(venuesArray);
   };
+
   useEffect(() => {
+    const getVenueList = async () => {
+      const querySnapshot = await getDocs(collection(db, "venues"));
+      const venuesArray = [];
+      querySnapshot.forEach((doc) => {
+        venuesArray.push({
+          ...doc.data(),
+          id: doc.id,
+        });
+      });
+
+      if (location) {
+        const filteredVenues = venuesArray
+          .map((venue) => ({
+            ...venue,
+            distance: calculateDistance(location.coords, {
+              latitude: venue.latitude,
+              longitude: venue.longitude,
+            }),
+          }))
+          .filter((venue) => venue.distance <= 50);
+
+        setNearbyVenues(filteredVenues);
+      }
+    };
+
     getVenueList();
-  }, []);
+  }, [location]);
+  const handleMarkerPress = (venue) => {
+    setSelectedVenue(venue);
+    modalizeRef.current?.open();
+  };
+  const renderContent = () => (
+    <View style={styles.modalContent}>
+      <Text style={styles.venueName}>{selectedVenue?.name}</Text>
+    </View>
+  );
+
   if (errorMsg) {
     return (
       <View style={styles.container}>
@@ -108,7 +119,7 @@ const Map = ({}) => {
   if (!location) {
     return (
       <View style={styles.container}>
-        <Text>Fetching location...</Text>
+        <ActivityIndicator />
       </View>
     );
   }
@@ -118,6 +129,11 @@ const Map = ({}) => {
     latitudeDelta: 0.0922,
     longitudeDelta: 0.0421,
   };
+  const CustomMarker = ({ iconName, iconColor, iconSize }) => (
+    <View style={styles.customMarkerView}>
+      <MaterialIcons name={iconName} size={iconSize} color={iconColor} />
+    </View>
+  );
   console.log("User Location:", userLocation);
   return (
     <SafeAreaView style={styles.container}>
@@ -132,7 +148,9 @@ const Map = ({}) => {
             }}
             title={venue.name}
             onPress={() => handleMarkerPress(venue)}
-          ></Marker>
+          >
+            <CustomMarker iconName="place" iconColor="blue" iconSize={30} />
+          </Marker>
         ))}
       </MapView>
       <Modalize ref={modalizeRef} snapPoint={300} modalHeight={600}>
@@ -140,7 +158,7 @@ const Map = ({}) => {
       </Modalize>
       {nearbyVenues.length > 0 ? (
         <SlidingUpPanel
-          draggableRange={{ top: 680, bottom: 200 }}
+          draggableRange={{ top: 680, bottom: 330 }}
           minimumVelocityThreshold={0.1}
           minimumDistanceThreshold={0.24}
           snappingPoints={snappingPoints}
@@ -157,12 +175,25 @@ const Map = ({}) => {
               <ScrollView style={styles.panelContainer}>
                 <Text>Nearby Venues</Text>
                 {nearbyVenues.map((item) => (
-                  <VenueList
-                    key={item.id}
-                    title={item.name}
-                    image={item.image}
-                    location={item.location}
-                  />
+                  <View key={item.id}>
+                    <VenueList
+                      title={item.name}
+                      image={item.image}
+                      location={item.location}
+                    />
+                    <Pressable
+                      onPress={() => {
+                        if (user) {
+                          navigation.navigate("Booking", { venue: item });
+                        } else {
+                          navigation.navigate("Welcome");
+                        }
+                      }}
+                      style={styles.bookButton}
+                    >
+                      <Text style={styles.bookButtonText}>Book this venue</Text>
+                    </Pressable>
+                  </View>
                 ))}
               </ScrollView>
             </View>
@@ -177,8 +208,6 @@ const Map = ({}) => {
 
 const styles = StyleSheet.create({
   container: {
-    // flex: 1,
-    // zIndex: 1,
     flex: 1,
   },
   imageContainer: {
@@ -227,11 +256,24 @@ const styles = StyleSheet.create({
     backgroundColor: "white",
     padding: 10,
     borderRadius: 10,
-    elevation: 3, // for Android shadow
-    shadowColor: "#000", // for iOS shadow
+    elevation: 3,
+    shadowColor: "#000",
     shadowOpacity: 0.3,
     shadowRadius: 5,
     shadowOffset: { width: 0, height: 2 },
+  },
+  customMarkerView: {
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  bookButton: {
+    borderRadius: 5,
+    borderWidth: 1,
+    backgroundColor: "yellow",
+    width: 280,
+  },
+  bookButtonText: {
+    fontSize: 20,
   },
 });
 export default Map;

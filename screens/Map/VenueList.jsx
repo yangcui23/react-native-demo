@@ -23,7 +23,7 @@ const VenueList = (props) => {
 const styles = StyleSheet.create({
   container: {
     // flex: 1,
-    marginBottom: 100,
+    marginBottom: 20,
   },
   venueItem: {
     padding: 10,
