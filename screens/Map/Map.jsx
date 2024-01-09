@@ -158,7 +158,7 @@ const Map = () => {
       </Modalize>
       {nearbyVenues.length > 0 ? (
         <SlidingUpPanel
-          draggableRange={{ top: 680, bottom: 330 }}
+          draggableRange={{ top: 647, bottom: 330 }}
           minimumVelocityThreshold={0.1}
           minimumDistanceThreshold={0.24}
           snappingPoints={snappingPoints}
@@ -200,7 +200,9 @@ const Map = () => {
           )}
         </SlidingUpPanel>
       ) : (
-        <ActivityIndicator />
+        <View style={styles.centeredView}>
+          <ActivityIndicator size="large" color="#0000ff" />
+        </View>
       )}
     </SafeAreaView>
   );
@@ -274,6 +276,11 @@ const styles = StyleSheet.create({
   },
   bookButtonText: {
     fontSize: 20,
+  },
+  centeredView: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
   },
 });
 export default Map;

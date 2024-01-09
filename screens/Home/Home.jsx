@@ -37,7 +37,7 @@ export default function Home({ navigation }) {
             },
             styles.button,
           ]}
-          onPress={() => navigation.navigate("Map")}
+          onPress={() => navigation.navigate("MapTab")}
         >
           <Text style={styles.text}> Rooftop Venues Near You</Text>
         </Pressable>

@@ -20,65 +20,68 @@ import SignUpPage from "./screens/SignUp/SignUpPage";
 import logo from "./assets/images/up.png";
 import MapStackNavitagor from "./navigation/mapStack";
 import { StripeProvider } from "@stripe/stripe-react-native";
+import { BookingProvider } from "./services/bookingContext";
 const Tab = createBottomTabNavigator();
 
 export default function App({ navigation }) {
   return (
-    <StripeProvider publishableKey="pk_test_51N1mK1HxWG3skUBnTVlZ7VjRM0lmev84pllPANe6mp12ON4TaFCjV4ewwPZ1Z4yzeDsriOWOGNVhVnpNUXgjZGrF00gjEdxw62">
-      <GestureHandlerRootView style={{ flex: 1 }}>
-        <NavigationContainer>
-          <Tab.Navigator
-            screenOptions={({ navigation }) => ({
-              tabBarActiveTintColor: "tomato",
-              tabBarInactiveTintColor: "gray",
-              headerStyle: {
-                backgroundColor: "#437f97",
-              },
-              headerLeft: () => (
-                <TouchableOpacity onPress={() => navigation.navigate("Home")}>
-                  <Image source={logo} style={styles.logo} />
-                </TouchableOpacity>
-              ),
-            })}
-          >
-            <Tab.Screen
-              name="Home"
-              component={Home}
-              options={{
-                title: "",
-                tabBarLabel: "Home",
-                tabBarIcon: ({ color, size }) => (
-                  <MaterialIcons name="home" color={color} size={size} />
+    <BookingProvider>
+      <StripeProvider publishableKey="pk_test_51OU24BKcfxYg7Jb7byNS6O1QeLExiifWgXrxhM2h8rQSXMl6qYI7xotbo5DsJspkBGuFuTllLj4Ofv9QMqXCAhsA00bz0tGYBE">
+        <GestureHandlerRootView style={{ flex: 1 }}>
+          <NavigationContainer>
+            <Tab.Navigator
+              screenOptions={({ navigation }) => ({
+                tabBarActiveTintColor: "tomato",
+                tabBarInactiveTintColor: "gray",
+                headerStyle: {
+                  backgroundColor: "#437f97",
+                },
+                headerLeft: () => (
+                  <TouchableOpacity onPress={() => navigation.navigate("Home")}>
+                    <Image source={logo} style={styles.logo} />
+                  </TouchableOpacity>
                 ),
-              }}
-            />
-            <Tab.Screen
-              name="MapTab"
-              component={MapStackNavitagor}
-              options={{
-                title: "",
-                tabBarLabel: "Map",
+              })}
+            >
+              <Tab.Screen
+                name="Home"
+                component={Home}
+                options={{
+                  title: "",
+                  tabBarLabel: "Home",
+                  tabBarIcon: ({ color, size }) => (
+                    <MaterialIcons name="home" color={color} size={size} />
+                  ),
+                }}
+              />
+              <Tab.Screen
+                name="MapTab"
+                component={MapStackNavitagor}
+                options={{
+                  title: "",
+                  tabBarLabel: "Map",
 
-                tabBarIcon: ({ color, size }) => (
-                  <MaterialIcons name="map" color={color} size={size} />
-                ),
-              }}
-            />
-            <Tab.Screen
-              name="Account"
-              component={SignUpPage}
-              options={{
-                title: "",
-                tabBarLabel: "Account",
-                tabBarIcon: ({ color, size }) => (
-                  <MaterialIcons name="book" color={color} size={size} />
-                ),
-              }}
-            />
-          </Tab.Navigator>
-        </NavigationContainer>
-      </GestureHandlerRootView>
-    </StripeProvider>
+                  tabBarIcon: ({ color, size }) => (
+                    <MaterialIcons name="map" color={color} size={size} />
+                  ),
+                }}
+              />
+              <Tab.Screen
+                name="Account"
+                component={SignUpPage}
+                options={{
+                  title: "",
+                  tabBarLabel: "Account",
+                  tabBarIcon: ({ color, size }) => (
+                    <MaterialIcons name="book" color={color} size={size} />
+                  ),
+                }}
+              />
+            </Tab.Navigator>
+          </NavigationContainer>
+        </GestureHandlerRootView>
+      </StripeProvider>
+    </BookingProvider>
   );
 }
 
